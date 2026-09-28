@@ -2,9 +2,9 @@
 
 ## Current Objective
 
-- Goal: 在独立分支准备 Learning Machine V2 核心反馈闭环开发，同时保留 main 上的 V1。
-- Current status: V2 的 `v2-01` 至 `v2-11` 已完成；最终格式、前端、构建、Rust 和差异门禁通过，等待用户选择提交/推送/合并方式。
-- Branch / commit: `feature/v2-core-feedback-loop`，基于 `main` 的 `05d1c98`；Harness 改动仍未提交。
+- Goal: 将 Learning Machine V2 合并到 main 并发布首个正式 Windows 版本。
+- Current status: V2 已合并到 main，2.0.0 完整门禁和 NSIS 构建通过，等待推送、标签和 GitHub Release。
+- Branch / commit: `main`，本地包含 V2 合并提交与待提交的 2.0.0 发布元数据。
 
 ## Completed This Session
 
@@ -25,6 +25,8 @@
 - [x] 完成 `v2-08`：反馈页面直接删除真实反馈文件；后端严格限制为 `feedback/*.md` 并拒绝越界目标。
 - [x] 完成 `v2-09`：本地 Markdown 模板追加到反馈或项目书并复制到 `materials/templates/`；同名自动避让，新项目书仅保留标题。
 - [x] 实现 `v2-10`：概览单一项目书入口、空反馈可删除、反馈按时间最新优先、右栏单层滚动和底部空间。
+- [x] 将 `feature/v2-core-feedback-loop` 无冲突合并到 `main`。
+- [x] 将版本元数据统一为 2.0.0 并生成 Windows x64 NSIS 安装包。
 
 ## Verification Evidence
 
@@ -50,6 +52,9 @@
 | V2-11 Rust format | `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check` | pass | 既有 Rust 源码已统一格式化 |
 | V2-11 final gate | `powershell -ExecutionPolicy Bypass -File .\init.ps1` | pass | 48/48 前端测试、生产构建、16/16 Rust 测试 |
 | V2-11 diff check | `git diff --check` | pass | 无空白错误 |
+| V2.0.0 merged-main gate | `powershell -ExecutionPolicy Bypass -File .\init.ps1` | pass | 48/48 前端测试、生产构建、16/16 Rust 测试 |
+| V2.0.0 Rust format | `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check` | pass | 无格式差异 |
+| V2.0.0 NSIS bundle | `corepack pnpm bundle:windows` | pass | 6.69 MiB；SHA-256 `BFC2D75CA44CA252B7D89CC9D968C4FDE0296A1810E60FBB34AFF2B74662E90D`；未签名 |
 
 ## Files Changed
 
@@ -81,9 +86,9 @@
 1. 完整阅读 `AGENTS.md`。
 2. 阅读 `feature_list.json`、`progress.md` 和本文件。
 3. 执行 `git status --short --branch`。
-4. 阅读 `feature_list.json` 中 V2 的 `implementationTasks`，从首个未完成任务继续。
-5. Windows 运行 `powershell -ExecutionPolicy Bypass -File .\init.ps1`；Git Bash 运行 `./init.sh`。
+4. 确认 `v2.0.0` 标签与 GitHub Release 状态。
+5. 新功能开始前在 `feature_list.json` 新增唯一活动合同。
 
 ## Recommended Next Step
 
-- 继续执行 `v2-08` 完整前端、Rust、统一脚本和人工验证门禁；完成后由用户决定是否合并。
+- 推送 main，创建 `v2.0.0` 标签与 GitHub Release，并上传已验证的 NSIS 安装包。

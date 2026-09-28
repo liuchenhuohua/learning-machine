@@ -1,6 +1,6 @@
 [package]
 name = "learning-machine"
-version = "0.1.0"
+version = "2.0.0"
 description = "A local-first learning project workspace"
 authors = ["Learning Machine"]
 edition = "2021"
@@ -20,4 +20,3 @@ tauri = { version = "2", features = [] }
 tauri-plugin-dialog = "2"
 tauri-plugin-opener = "2"
 tauri-plugin-store = "2"
-

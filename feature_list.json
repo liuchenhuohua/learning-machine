@@ -1,8 +1,60 @@
 {
   "schemaVersion": 1,
-  "activeFeature": "v2-core-feedback-loop",
+  "activeFeature": null,
   "allowedStatuses": ["not-started", "in-progress", "blocked", "done"],
   "features": [
+    {
+      "id": "release-v2.0.0",
+      "name": "Learning Machine V2.0.0 formal release",
+      "description": "将已合并到 main 的 V2 核心反馈闭环打包为第一个正式发布版本。",
+      "dependencies": ["v2-core-feedback-loop"],
+      "status": "done",
+      "contract": {
+        "goal": "从已验证的 main 构建并准备 Learning Machine V2.0.0 Windows 正式发布。",
+        "userVisibleBehavior": [
+          "安装程序和应用元数据统一显示版本 2.0.0",
+          "用户可以通过 Windows NSIS 安装程序安装 Learning Machine V2.0.0"
+        ],
+        "scope": [
+          "将 V2 功能分支合并到 main",
+          "同步 package、Tauri、Cargo 和锁文件版本号",
+          "运行完整自动验证与 Windows NSIS 发布构建",
+          "记录安装包路径、大小、SHA-256 和发布状态"
+        ],
+        "nonGoals": [
+          "不增加新的产品功能",
+          "不改变用户项目数据格式",
+          "不配置商业代码签名",
+          "不增加自动更新或应用商店发布"
+        ],
+        "constraints": [
+          "正式版本号统一为 2.0.0",
+          "发布必须来自 main 的已验证提交",
+          "未签名安装包可能触发 Windows SmartScreen 提示",
+          "推送、标签和 GitHub Release 必须基于实际成功构建的产物"
+        ],
+        "acceptanceCriteria": [
+          "V2 已无冲突合并到 main",
+          "所有应用版本元数据均为 2.0.0",
+          "完整验证门禁通过",
+          "NSIS 安装包成功生成并记录 SHA-256",
+          "发布记录明确已知风险和下一步"
+        ],
+        "verificationPlan": [
+          "运行 powershell -ExecutionPolicy Bypass -File .\\init.ps1",
+          "运行 cargo fmt --manifest-path src-tauri/Cargo.toml -- --check",
+          "运行 corepack pnpm bundle:windows",
+          "检查生成安装包的版本信息、大小和 SHA-256",
+          "解析 feature_list.json 并运行 git diff --check"
+        ]
+      },
+      "doneCriteria": [
+        "main 合并结果与 2.0.0 元数据通过完整门禁",
+        "Windows NSIS 安装包成功生成并留有可复核证据",
+        "正式发布步骤和风险已记录"
+      ],
+      "evidence": "2026-09-28：V2 功能分支无冲突合并到 main；版本元数据统一为 2.0.0；init.ps1 通过（48/48 前端测试、生产构建、16/16 Rust 测试），cargo fmt --check 与 git diff --check 通过；生成 6.69 MiB 的 Learning Machine_2.0.0_x64-setup.exe，SHA-256 为 BFC2D75CA44CA252B7D89CC9D968C4FDE0296A1810E60FBB34AFF2B74662E90D，安装包未签名。"
+    },
     {
       "id": "baseline-001",
       "name": "Learning Machine V1 baseline",

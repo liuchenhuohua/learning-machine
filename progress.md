@@ -3,8 +3,8 @@
 ## Current State
 
 **Last Updated:** 2026-09-28
-**Active Feature:** `v2-core-feedback-loop` — 页面与交互要求及实施任务已写入 `feature_list.json`
-**Branch:** `feature/v2-core-feedback-loop`
+**Active Feature:** 无 — `release-v2.0.0` 已完成
+**Branch:** `main`
 
 ## Status
 
@@ -31,16 +31,18 @@
 - [x] `v2-08`：反馈页改用专用安全删除命令；只允许删除 `feedback/` 下一层 Markdown 文件，删除后同步列表和详情状态；前端 47/47、Rust 13/13、类型检查和构建通过。
 - [x] `v2-09`：反馈与项目书均可选择本地 Markdown 模板，追加内容并复制到 `materials/templates/`，同名自动避让且提示实际路径；新项目书只保留项目名称标题；前端 48/48、Rust 15/15、类型检查和构建通过。
 - [x] `v2-10`：概览单一项目书回顾入口、空反馈删除和反馈最新优先排序已实现；首次 CSS 底部空间方案无效，改用 CodeMirror 官方 `scrollPastEnd()` 后用户确认最后一行和下方空间可完整查看。
+- [x] V2 功能分支已无冲突合并到 `main`，合并后的完整门禁通过。
+- [x] 版本元数据统一为 `2.0.0`，Windows x64 NSIS 正式安装包已生成。
 
 ### What's In Progress
 
-- [x] `v2-core-feedback-loop`：`v2-01` 至 `v2-11` 全部完成，最终自动门禁和已要求的桌面人工验证通过；等待用户选择分支集成方式。
+- 无。
 
 ### What's Next
 
-1. 运行 `v2-08` 的前端、Rust 和统一脚本完整门禁。
-2. 用户在 Tauri 桌面端人工确认反馈、调整、差异保存、历史查看和概览页闭环。
-3. 保留功能分支，由用户决定是否合并到 `main`。
+1. 提交并推送 `main` 的 V2.0.0 发布元数据和交付记录。
+2. 创建并推送 `v2.0.0` 标签。
+3. 在 GitHub 创建正式 Release 并上传 NSIS 安装包。
 
 ## Blockers / Risks
 
@@ -94,7 +96,9 @@
 - [x] V2-10 automated verification: `init.ps1` 通过，48/48 前端测试、生产构建和 16/16 Rust 测试成功。
 - [x] V2-10 manual scroll verification: 用户确认长项目书右栏最后一行及其下方空间可以完整查看。
 - [x] V2-11 final gate: 格式化后 `cargo fmt --check` 通过；`init.ps1` 通过，48/48 前端测试、生产构建和 16/16 Rust 测试成功；`git diff --check` 通过。
+- [x] V2.0.0 merged-main gate: `init.ps1` 通过，48/48 前端测试、生产构建和 16/16 Rust 测试成功；`cargo fmt --check` 通过。
+- [x] V2.0.0 Windows bundle: `Learning Machine_2.0.0_x64-setup.exe`，7,015,536 bytes（6.69 MiB），SHA-256 `BFC2D75CA44CA252B7D89CC9D968C4FDE0296A1810E60FBB34AFF2B74662E90D`，Authenticode 状态 `NotSigned`。
 
 ## Notes for Next Session
 
-当前位于 `feature/v2-core-feedback-loop`。`v2-01` 至 `v2-11` 已完成并通过最终门禁；工作区改动尚未提交、推送或合并，等待用户选择集成方式。
+当前位于 `main`。V2 已合并并完成 2.0.0 正式安装包构建；待提交、推送、创建标签及 GitHub Release。
