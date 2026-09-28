@@ -17,14 +17,14 @@
 需要 Node.js、pnpm、Rust stable MSVC、Windows C++ Build Tools 和 WebView2。
 
 ```powershell
-pnpm install
-pnpm tauri dev
+corepack pnpm install
+corepack pnpm tauri dev
 ```
 
 仅运行浏览器开发预览：
 
 ```powershell
-pnpm dev
+corepack pnpm dev
 ```
 
 浏览器预览使用内置示例项目；真实文件、原生对话框和 Git 操作只在 Tauri 窗口中启用。
@@ -32,13 +32,14 @@ pnpm dev
 ## 验证
 
 ```powershell
-pnpm test
-pnpm typecheck
-pnpm build
-cargo test --manifest-path src-tauri/Cargo.toml
+powershell -ExecutionPolicy Bypass -File .\init.ps1
 ```
 
-本仓库当前工作环境未检测到 Rust/Cargo，因此 Rust/Tauri 命令需要在安装工具链后执行。前端测试、类型检查和生产构建可独立运行。
+该命令依次运行前端类型检查、前端测试、生产构建和 Rust 测试。Git Bash 或类 Unix 环境可运行 `./init.sh`。
+
+## Agent Harness
+
+本仓库使用 `AGENTS.md`、`feature_list.json`、`progress.md` 和 `session-handoff.md` 保持 AI 编码任务在不同会话间可恢复。代理开始工作前应先阅读 `AGENTS.md`，选择唯一活动功能，并在宣称完成前记录实际验证证据。
 
 ## 项目数据
 

@@ -3,4 +3,3 @@
 fn main() {
     learning_machine_lib::run();
 }
-

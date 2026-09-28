@@ -7,6 +7,8 @@ import { ProjectDocument } from "../../features/project-document/ProjectDocument
 import { FeedbackWorkspace } from "../../features/feedback/FeedbackWorkspace";
 import { FilesWorkspace } from "../../features/files/FilesWorkspace";
 import { HistoryWorkspace } from "../../features/history/HistoryWorkspace";
+import { ProjectAdjustmentWorkspace } from "../../features/project-adjustment/ProjectAdjustmentWorkspace";
+import { ProjectVersionConfirmation } from "../../features/project-adjustment/ProjectVersionConfirmation";
 import { desktopApi, humanizeError } from "../../lib/desktop";
 
 const nav: { view: AppView; label: string; icon: typeof Home }[] = [
@@ -18,7 +20,7 @@ export function WorkspaceShell() {
   async function archive() { if (!project || !window.confirm("归档不会删除任何文件。确定要归档这个学习项目吗？")) return; if (!desktopApi.isNative()) return window.alert("项目已归档，所有文件保持不变。"); try { useAppStore.getState().openProject(await desktopApi.archiveProject(project.path)); } catch (cause) { window.alert(humanizeError(cause)); } }
   async function reveal() { if (!project) return; if (!desktopApi.isNative()) return window.alert(`项目目录：${project.path}`); try { await desktopApi.revealProject(project.path); } catch (cause) { window.alert(humanizeError(cause)); } }
   async function openProjectWindow() { if (openingWindow) return; if (!desktopApi.isNative()) return window.alert("桌面版支持在独立窗口中打开另一个项目。"); try { setWindowError(""); setOpeningWindow(true); await desktopApi.openProjectWindow(); } catch (cause) { setWindowError(humanizeError(cause)); } finally { setOpeningWindow(false); } }
-  const active = view === "feedback-editor" ? "feedback" : view === "diff" ? "history" : view;
+  const active = view === "feedback-editor" ? "feedback" : view === "diff" ? "history" : view === "project-adjustment" || view === "project-version-confirmation" ? "project-document" : view;
   return <div className="workspace">
     <aside className="sidebar">
       <button className="project-switcher"><div className="mini-monogram">研</div><div><strong>{project?.name}</strong><span>学习项目</span></div><ChevronDown size={15} /></button>
@@ -36,6 +38,8 @@ export function WorkspaceShell() {
 
 function renderView(view: AppView) {
   if (view === "project-document") return <ProjectDocument />;
+  if (view === "project-adjustment") return <ProjectAdjustmentWorkspace />;
+  if (view === "project-version-confirmation") return <ProjectVersionConfirmation />;
   if (view === "feedback" || view === "feedback-editor") return <FeedbackWorkspace editing={view === "feedback-editor"} />;
   if (view === "files" || view === "markdown-editor") return <FilesWorkspace />;
   if (view === "history" || view === "diff") return <HistoryWorkspace showDiff={view === "diff"} />;

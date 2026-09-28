@@ -31,6 +31,7 @@ export type GitCommit = {
   author: string;
   timestamp: string;
   kind: "project" | "feedback" | "file" | "system";
+  relatedFeedbackPath?: string;
 };
 
 export type GitChangedFile = {
@@ -45,4 +46,16 @@ export type DiskDocument = {
   modifiedAt: string;
 };
 
-export type AppView = "launcher" | "create-project" | "overview" | "project-document" | "feedback" | "feedback-editor" | "files" | "markdown-editor" | "history" | "diff";
+export type ProjectAdjustmentDraft = {
+  feedbackPath: string;
+  feedbackTitle: string;
+  feedbackCreatedAt: string;
+  feedbackContent: string;
+  originalProjectContent: string;
+  draftProjectContent: string;
+  projectModifiedAt: string;
+  versionNote: string;
+  saveState: "editing" | "file-saved-history-pending";
+};
+
+export type AppView = "launcher" | "create-project" | "overview" | "project-document" | "project-adjustment" | "project-version-confirmation" | "feedback" | "feedback-editor" | "files" | "markdown-editor" | "history" | "diff";
