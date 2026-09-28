@@ -24,19 +24,27 @@
 - [x] `v2-01`：增加调整草稿状态、调整/确认页面类型，并在切换或关闭项目时清理草稿；前端测试 28/28、类型检查通过。
 - [x] `v2-02`：Git commit trailer 持久关联反馈路径，增加安全校验与历史解析；Rust 测试 12/12、类型检查通过。
 - [x] `v2-03`：反馈编辑器改为空白 Markdown，增加可选提示、模板追加以及“保存并调整项目书”；前端测试 31/31、类型检查通过。
+- [x] `v2-04`：增加反馈—项目书双栏调整工作区、只读反馈、项目书编辑、独立滚动、窄屏纵向布局及安全空状态；前端测试 35/35、类型检查和构建通过。
+- [x] `v2-05`：增加行级差异确认、关联反馈信息、可编辑版本说明、冲突保护保存和 Git 历史失败重试；前端测试 43/43、类型检查和构建通过。
+- [x] `v2-06`：历史详情增加“为什么改”的关联反馈和“改了什么”的项目书差异；兼容旧版本及反馈文件缺失；前端测试 45/45、类型检查和构建通过。
+- [x] `v2-07`：概览页按当前阶段目标、当前学习策略、下一步排序，并补齐最近反馈、项目书变化、资料或笔记；移除浏览器原型的跨项目演示数据；前端测试 47/47、类型检查和构建通过。
+- [x] `v2-08`：反馈页改用专用安全删除命令；只允许删除 `feedback/` 下一层 Markdown 文件，删除后同步列表和详情状态；前端 47/47、Rust 13/13、类型检查和构建通过。
+- [x] `v2-09`：反馈与项目书均可选择本地 Markdown 模板，追加内容并复制到 `materials/templates/`，同名自动避让且提示实际路径；新项目书只保留项目名称标题；前端 48/48、Rust 15/15、类型检查和构建通过。
+- [x] `v2-10`：概览单一项目书回顾入口、空反馈删除和反馈最新优先排序已实现；首次 CSS 底部空间方案无效，改用 CodeMirror 官方 `scrollPastEnd()` 后用户确认最后一行和下方空间可完整查看。
 
 ### What's In Progress
 
-- [ ] `v2-core-feedback-loop`：正在实现 `v2-04` 反馈与项目书双栏调整工作区。
+- [x] `v2-core-feedback-loop`：`v2-01` 至 `v2-11` 全部完成，最终自动门禁和已要求的桌面人工验证通过；等待用户选择分支集成方式。
 
 ### What's Next
 
-1. 实现 `v2-04` 反馈与项目书双栏调整工作区。
-2. 按 `feature_list.json` 中的顺序继续实现剩余任务。
-3. 每个阶段记录验证证据，完整门禁通过后再讨论合并。
+1. 运行 `v2-08` 的前端、Rust 和统一脚本完整门禁。
+2. 用户在 Tauri 桌面端人工确认反馈、调整、差异保存、历史查看和概览页闭环。
+3. 保留功能分支，由用户决定是否合并到 `main`。
 
 ## Blockers / Risks
 
+- [x] `src-tauri` 既有源码已在最终交付门禁中统一执行 `cargo fmt`，`cargo fmt --check` 通过。
 - [ ] `package.json` 多项依赖使用 `latest`，重新安装依赖可能产生不可预测升级；当前不主动修改。
 - [ ] 桌面窗口、系统对话框、PDF 和拖放仍需要人工验证，自动化测试不能完全覆盖。
 - [ ] Vite 报告主 JavaScript 包约 1,021 kB，超过 500 kB 建议值；当前不影响构建，可在独立性能任务中处理。
@@ -70,7 +78,23 @@
 - [x] Task contracts: 4 个功能、每个 7 个合同字段检查通过。
 - [x] Harness validation after contract update: `100/100`。
 - [x] Diff check: `git diff --check` 通过。
+- [x] V2-04 frontend tests: 10 个测试文件、35/35 通过。
+- [x] V2-04 type check and production build: 通过；主包约 1,026 kB 的既有体积警告仍存在。
+- [x] V2-05 frontend tests: 12 个测试文件、43/43 通过。
+- [x] V2-05 type check and production build: 通过；主包约 1,030 kB 的既有体积警告仍存在。
+- [x] V2-06 frontend tests: 12 个测试文件、45/45 通过。
+- [x] V2-06 type check and production build: 通过；主包约 1,032 kB 的既有体积警告仍存在。
+- [x] V2-07 frontend tests: 13 个测试文件、47/47 通过。
+- [x] V2-07 type check and production build: 通过；主包约 1,029 kB 的既有体积警告仍存在。
+- [x] V2-08 unified gate: `init.ps1` 通过；47/47 前端测试、生产构建、12/12 Rust 测试成功。
+- [ ] V2-08 Rust format: `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check` 未通过；为既有全文件排版差异，本次未制造大范围格式改动。
+- [ ] V2-08 manual desktop validation: 待用户核对真实 `feedback/*.md`、`project.md` 和 Git 关联历史。
+- [x] V2-08 feedback deletion regression: 先确认专用接口缺失导致测试失败；修复后 `init.ps1` 通过，47/47 前端测试、生产构建和 13/13 Rust 测试成功。
+- [x] V2-09 local templates: 先确认模板接口和页面交互缺失导致测试失败；修复后 `init.ps1` 通过，48/48 前端测试、生产构建和 15/15 Rust 测试成功。
+- [x] V2-10 automated verification: `init.ps1` 通过，48/48 前端测试、生产构建和 16/16 Rust 测试成功。
+- [x] V2-10 manual scroll verification: 用户确认长项目书右栏最后一行及其下方空间可以完整查看。
+- [x] V2-11 final gate: 格式化后 `cargo fmt --check` 通过；`init.ps1` 通过，48/48 前端测试、生产构建和 16/16 Rust 测试成功；`git diff --check` 通过。
 
 ## Notes for Next Session
 
-当前位于 `feature/v2-core-feedback-loop`。页面与交互需求及 8 项实施任务已直接写入 `feature_list.json`；从 `v2-01` 开始直接编码，不要提前合并到 `main`。
+当前位于 `feature/v2-core-feedback-loop`。`v2-01` 至 `v2-11` 已完成并通过最终门禁；工作区改动尚未提交、推送或合并，等待用户选择集成方式。

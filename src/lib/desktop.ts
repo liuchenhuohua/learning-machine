@@ -19,12 +19,19 @@ export const desktopApi = {
     const selected = await open({ directory: false, multiple: true });
     return Array.isArray(selected) ? selected : selected ? [selected] : [];
   },
+  pickMarkdownTemplate: async () => {
+    const { open } = await import("@tauri-apps/plugin-dialog");
+    const selected = await open({ directory: false, multiple: false, filters: [{ name: "Markdown 模板", extensions: ["md", "markdown"] }] });
+    return typeof selected === "string" ? selected : null;
+  },
   readDocument: (projectRoot: string, relativePath: string) => invoke<DiskDocument>("read_document", { projectRoot, relativePath }),
   readBinaryDocument: (projectRoot: string, relativePath: string) => invoke<ArrayBuffer>("read_binary_document", { projectRoot, relativePath }),
   writeDocument: (projectRoot: string, relativePath: string, content: string, expectedModifiedAt?: string) =>
     invoke<DiskDocument>("write_document", { projectRoot, relativePath, content, expectedModifiedAt }),
   listFeedback: (projectRoot: string) => invoke<FeedbackDocument[]>("list_feedback", { projectRoot }),
   createFeedback: (projectRoot: string, content: string) => invoke<DiskDocument>("create_feedback", { projectRoot, content }),
+  importMarkdownTemplate: (projectRoot: string, sourcePath: string) => invoke<DiskDocument>("import_markdown_template", { projectRoot, sourcePath }),
+  deleteFeedback: (projectRoot: string, relativePath: string) => invoke<void>("delete_feedback", { projectRoot, relativePath }),
   listFiles: (projectRoot: string) => invoke<ProjectFile[]>("list_project_files", { projectRoot }),
   createEntry: (projectRoot: string, relativePath: string, kind: "file" | "directory") => invoke<void>("create_entry", { projectRoot, relativePath, kind }),
   renameEntry: (projectRoot: string, relativePath: string, newName: string) => invoke<void>("rename_entry", { projectRoot, relativePath, newName }),
@@ -48,6 +55,7 @@ export function humanizeError(error: unknown): string {
   if (message.includes("NAME_CONFLICT")) return "目标位置已有同名文件，未进行覆盖。";
   if (message.includes("INVALID_MOVE")) return "不能把文件夹移动到自身或它的子文件夹中。";
   if (message.includes("MOVE_NOOP")) return "文件已经在这个文件夹中。";
+  if (message.includes("MARKDOWN_TEMPLATE_REQUIRED")) return "请选择 Markdown（.md 或 .markdown）模板文件。";
   if (message.includes("PROTECTED_PATH")) return "materials 和 notes 根目录不能移动。";
   if (message.includes("GIT_UNAVAILABLE")) return "未检测到 Git，版本历史暂不可用。";
   return message || "操作没有完成，请稍后重试。";

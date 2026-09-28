@@ -4,7 +4,6 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { desktopApi } from "../../lib/desktop";
 import { useAppStore } from "../../stores/appStore";
 import { FeedbackWorkspace } from "./FeedbackWorkspace";
-import { appendFeedbackTemplate } from "../../templates/feedbackTemplate";
 
 const project = {
   path: "D:/projects/current",
@@ -52,11 +51,20 @@ describe("FeedbackWorkspace", () => {
     expect(screen.getByText("下一步想改变什么")).toBeInTheDocument();
   });
 
-  it("appends the full review template without replacing existing writing", () => {
-    const result = appendFeedbackTemplate("今天先记录一个关键发现。", "2026-09-28");
+  it("imports a local Markdown template and reports its copied project path", async () => {
+    const user = userEvent.setup();
+    vi.spyOn(desktopApi, "pickMarkdownTemplate").mockResolvedValue("C:/templates/review.md");
+    vi.spyOn(desktopApi, "importMarkdownTemplate").mockResolvedValue({
+      path: "materials/templates/review.md",
+      content: "# 本地复盘模板\n\n## 实际发生了什么",
+      modifiedAt: "1759010000000"
+    });
+    render(<FeedbackWorkspace editing />);
 
-    expect(result).toContain("今天先记录一个关键发现。\n\n# 学习反馈");
-    expect(result).toContain("## 实际发生了什么");
+    await user.click(screen.getByRole("button", { name: "插入完整复盘模板" }));
+
+    expect(screen.getByRole("textbox")).toHaveTextContent("本地复盘模板");
+    expect(screen.getByText("模板已复制到 materials/templates/review.md")).toBeInTheDocument();
   });
 
   it("saves feedback and opens a project adjustment draft", async () => {
@@ -71,6 +79,12 @@ describe("FeedbackWorkspace", () => {
       path: "project.md",
       content: "# 当前项目书",
       modifiedAt: "1759000000000"
+    });
+    vi.spyOn(desktopApi, "pickMarkdownTemplate").mockResolvedValue("C:/templates/review.md");
+    vi.spyOn(desktopApi, "importMarkdownTemplate").mockResolvedValue({
+      path: "materials/templates/review.md",
+      content: "# 学习反馈\n\n## 实际发生了什么",
+      modifiedAt: "1759010001000"
     });
     render(<FeedbackWorkspace editing />);
 
@@ -101,7 +115,7 @@ describe("FeedbackWorkspace", () => {
       content: "# 一次真实复盘\n\n这是本项目的反馈内容。",
       modifiedAt: "1756339200000"
     });
-    const remove = vi.spyOn(desktopApi, "deleteEntry").mockResolvedValue(undefined);
+    const remove = vi.spyOn(desktopApi, "deleteFeedback").mockResolvedValue(undefined);
     vi.spyOn(window, "confirm").mockReturnValue(true);
     render(<FeedbackWorkspace editing={false} />);
 
@@ -110,5 +124,21 @@ describe("FeedbackWorkspace", () => {
     await user.click(screen.getByRole("button", { name: "删除反馈" }));
 
     await waitFor(() => expect(remove).toHaveBeenCalledWith(project.path, "feedback/2026-08-28-01.md"));
+    expect(screen.getByText("还没有反馈")).toBeInTheDocument();
+  });
+
+  it("keeps deletion available for a saved feedback file with empty content", async () => {
+    vi.spyOn(desktopApi, "listFeedback").mockResolvedValue([{
+      path: "feedback/2026-09-28-01.md",
+      createdAt: "1759010000000",
+      title: undefined,
+      requestsAdjustment: false
+    }]);
+    vi.spyOn(desktopApi, "readDocument").mockResolvedValue({ path: "feedback/2026-09-28-01.md", content: "", modifiedAt: "1759010000000" });
+
+    render(<FeedbackWorkspace editing={false} />);
+
+    expect(await screen.findByRole("button", { name: "删除反馈" })).toBeInTheDocument();
+    expect(screen.getAllByText("2026-09-28-01.md")).toHaveLength(2);
   });
 });
