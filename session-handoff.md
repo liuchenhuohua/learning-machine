@@ -3,7 +3,7 @@
 ## Current Objective
 
 - Goal: 在独立分支准备 Learning Machine V2 核心反馈闭环开发，同时保留 main 上的 V1。
-- Current status: 已确认仅采用设计文档的页面与交互要求，并保留真实 Tauri/文件/Git；正在创建实施计划，尚未编码。
+- Current status: 已确认仅采用设计文档的页面与交互要求，并保留真实 Tauri/文件/Git；8 项实施任务已直接写入 `feature_list.json`，尚未修改产品代码。
 - Branch / commit: `feature/v2-core-feedback-loop`，基于 `main` 的 `05d1c98`；Harness 改动仍未提交。
 
 ## Completed This Session
@@ -16,6 +16,8 @@
 - [x] 增加实施前任务合同规则并回填所有既有功能。
 - [x] 创建 `feature/v2-core-feedback-loop` 分支。
 - [x] 保存 V2 范围、非目标、约束、初步验收标准和验证计划。
+- [x] 将 V2 的 8 项待实现功能直接写入 `feature_list.json`。
+- [x] 完成 `v2-01` 至 `v2-03`：调整草稿状态、Git 反馈关联和开放式反馈编辑器。
 
 ## Verification Evidence
 
@@ -50,7 +52,7 @@
 
 ## Blockers / Risks
 
-- 当前无产品需求阻塞；等待实施计划评审和执行方式确认。
+- 当前无产品需求阻塞，可从 `v2-01` 直接开始实现。
 - 已记录前端包体积和 Rust 链接器非阻塞警告。
 
 ## Next Session Startup
@@ -58,9 +60,9 @@
 1. 完整阅读 `AGENTS.md`。
 2. 阅读 `feature_list.json`、`progress.md` 和本文件。
 3. 执行 `git status --short --branch`。
-4. 阅读 V2 实施计划并确认用户选择的执行方式。
+4. 阅读 `feature_list.json` 中 V2 的 `implementationTasks`，从首个未完成任务继续。
 5. Windows 运行 `powershell -ExecutionPolicy Bypass -File .\init.ps1`；Git Bash 运行 `./init.sh`。
 
 ## Recommended Next Step
 
-- 完成实施计划并交给用户评审，确认后再开始编码。
+- 实现 `v2-04` 反馈与项目书双栏调整工作区。

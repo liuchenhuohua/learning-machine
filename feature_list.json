@@ -251,7 +251,7 @@
         {
           "id": "v2-01",
           "name": "调整会话状态与页面导航",
-          "status": "not-started",
+          "status": "done",
           "deliverables": [
             "增加项目书调整与版本确认页面类型",
             "增加不持久化的调整草稿状态",
@@ -264,7 +264,7 @@
         {
           "id": "v2-02",
           "name": "反馈与项目书版本的 Git 持久关联",
-          "status": "not-started",
+          "status": "done",
           "deliverables": [
             "新增关联反馈的项目书版本提交命令",
             "在 Git commit trailer 中保存 feedback/*.md 相对路径",
@@ -279,7 +279,7 @@
         {
           "id": "v2-03",
           "name": "开放式反馈编辑器",
-          "status": "not-started",
+          "status": "done",
           "deliverables": [
             "新反馈默认空白 Markdown",
             "提供四条可选写作提示",
@@ -294,7 +294,7 @@
         {
           "id": "v2-04",
           "name": "反馈与项目书双栏调整工作区",
-          "status": "not-started",
+          "status": "in-progress",
           "deliverables": [
             "左侧只读展示本次反馈原文",
             "右侧编辑当前 project.md",

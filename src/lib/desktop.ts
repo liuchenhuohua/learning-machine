@@ -37,6 +37,7 @@ export const desktopApi = {
   gitFileDiff: (projectRoot: string, hash: string, relativePath: string) => invoke<string>("git_file_diff", { projectRoot, hash, relativePath }),
   openProjectWindow: () => invoke<void>("open_project_window"),
   gitCommit: (projectRoot: string, message: string) => invoke<void>("git_commit", { projectRoot, message }),
+  gitCommitProjectVersion: (projectRoot: string, summary: string, feedbackRelativePath: string) => invoke<void>("git_commit_project_version", { projectRoot, summary, feedbackRelativePath }),
   archiveProject: (projectRoot: string) => invoke<LearningProject>("archive_project", { projectRoot }),
   revealProject: (path: string) => invoke<void>("reveal_project", { path })
 };

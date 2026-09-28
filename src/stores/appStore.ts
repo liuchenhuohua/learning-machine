@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import type { AppView, LearningProject } from "../types/domain";
+import type { AppView, LearningProject, ProjectAdjustmentDraft } from "../types/domain";
 
 type ThemeMode = "light" | "dark" | "system";
 
@@ -9,12 +9,16 @@ type AppState = {
   project: LearningProject | null;
   theme: ThemeMode;
   selectedPath: string | null;
+  projectAdjustment: ProjectAdjustmentDraft | null;
   recentProjects: LearningProject[];
   navigate: (view: AppView) => void;
   openProject: (project: LearningProject) => void;
   closeProject: () => void;
   setTheme: (theme: ThemeMode) => void;
   selectPath: (path: string | null) => void;
+  startProjectAdjustment: (draft: ProjectAdjustmentDraft) => void;
+  updateProjectAdjustment: (patch: Partial<ProjectAdjustmentDraft>) => void;
+  clearProjectAdjustment: () => void;
   reset: () => void;
 };
 
@@ -23,15 +27,19 @@ const initialState = {
   project: null,
   theme: "system" as const,
   selectedPath: null,
+  projectAdjustment: null,
   recentProjects: [] as LearningProject[]
 };
 
 export const useAppStore = create<AppState>()(persist((set) => ({
   ...initialState,
   navigate: (view) => set({ view }),
-  openProject: (project) => set((state) => ({ project, view: "overview", selectedPath: null, recentProjects: [project, ...state.recentProjects.filter(item => item.path !== project.path)].slice(0, 8) })),
-  closeProject: () => set({ project: null, view: "launcher", selectedPath: null }),
+  openProject: (project) => set((state) => ({ project, view: "overview", selectedPath: null, projectAdjustment: null, recentProjects: [project, ...state.recentProjects.filter(item => item.path !== project.path)].slice(0, 8) })),
+  closeProject: () => set({ project: null, view: "launcher", selectedPath: null, projectAdjustment: null }),
   setTheme: (theme) => set({ theme }),
   selectPath: (selectedPath) => set({ selectedPath }),
+  startProjectAdjustment: (projectAdjustment) => set({ projectAdjustment, view: "project-adjustment" }),
+  updateProjectAdjustment: (patch) => set((state) => ({ projectAdjustment: state.projectAdjustment ? { ...state.projectAdjustment, ...patch } : null })),
+  clearProjectAdjustment: () => set({ projectAdjustment: null }),
   reset: () => set(initialState)
 }), { name: "learning-machine-preferences", partialize: (state) => ({ theme: state.theme, recentProjects: state.recentProjects }) }));

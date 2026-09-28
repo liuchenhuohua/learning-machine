@@ -7,10 +7,11 @@ describe("document templates", () => {
     expect(createProjectTemplate("2027 考研")).toContain("# 2027 考研\n");
   });
 
-  it("creates feedback with a real date and an unchecked adjustment choice", () => {
+  it("creates an optional open review template with a real date", () => {
     const result = createFeedbackTemplate("2026-08-29");
     expect(result).toContain("日期：2026-08-29");
-    expect(result).toContain("- [ ] 需要");
+    expect(result).toContain("## 实际发生了什么");
+    expect(result).not.toContain("是否需要修改项目书");
   });
 
   it("recognizes only a checked project adjustment choice", () => {

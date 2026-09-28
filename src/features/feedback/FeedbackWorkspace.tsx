@@ -1,7 +1,7 @@
-import { ArrowLeft, ArrowRight, Calendar, FileText, Plus, Save, Trash2 } from "lucide-react";
+import { ArrowLeft, ArrowRight, Calendar, FileText, Lightbulb, Plus, Save, Trash2 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { MarkdownEditor } from "../../components/editor/MarkdownEditor";
-import { createFeedbackTemplate } from "../../templates/feedbackTemplate";
+import { appendFeedbackTemplate } from "../../templates/feedbackTemplate";
 import { useAppStore } from "../../stores/appStore";
 import { desktopApi, humanizeError } from "../../lib/desktop";
 import type { FeedbackDocument } from "../../types/domain";
@@ -17,8 +17,10 @@ export function FeedbackWorkspace({ editing }: { editing: boolean }) {
   const project = useAppStore(state => state.project);
   const selectedPath = useAppStore(state => state.selectedPath);
   const selectPath = useAppStore(state => state.selectPath);
+  const startProjectAdjustment = useAppStore(state => state.startProjectAdjustment);
   const today = useMemo(() => new Date().toISOString().slice(0, 10), []);
-  const [content, setContent] = useState(() => createFeedbackTemplate(today));
+  const [content, setContent] = useState("");
+  const [showPrompts, setShowPrompts] = useState(false);
   const [error, setError] = useState("");
   const [documents, setDocuments] = useState<FeedbackDocument[]>([]);
   const [selectedFeedback, setSelectedFeedback] = useState<FeedbackDocument | null>(null);
@@ -63,12 +65,28 @@ export function FeedbackWorkspace({ editing }: { editing: boolean }) {
     return () => { cancelled = true; };
   }, [project?.path, editing, native]);
 
-  async function saveFeedback() {
+  async function saveFeedback(adjustProject = false) {
     try {
       if (project && native) {
         const document = await desktopApi.createFeedback(project.path, content);
         await desktopApi.gitCommit(project.path, `feedback: add learning feedback ${document.path.split("/").pop()?.replace(".md", "")}`).catch(() => undefined);
         selectPath(document.path);
+        if (adjustProject) {
+          const projectDocument = await desktopApi.readDocument(project.path, "project.md");
+          const feedbackTitle = content.split("\n").find(line => line.startsWith("# "))?.slice(2).trim() || document.path.split("/").pop()?.replace(".md", "") || "学习反馈";
+          startProjectAdjustment({
+            feedbackPath: document.path,
+            feedbackTitle,
+            feedbackCreatedAt: new Date().toISOString(),
+            feedbackContent: content,
+            originalProjectContent: projectDocument.content,
+            draftProjectContent: projectDocument.content,
+            projectModifiedAt: projectDocument.modifiedAt,
+            versionNote: "根据反馈调整项目书",
+            saveState: "editing"
+          });
+          return;
+        }
       }
       setError("");
       navigate("feedback");
@@ -99,9 +117,11 @@ export function FeedbackWorkspace({ editing }: { editing: boolean }) {
 
   if (editing) return <div className="page feedback-editor">
     <button className="text-button" onClick={() => navigate("feedback")}><ArrowLeft size={15}/>返回反馈列表</button>
-    <div className="page-intro compact"><div><p className="eyebrow">QUICK FEEDBACK</p><h1>新建学习反馈</h1><p>比较原来的预期和现实发生的事情，然后决定下一步。</p></div><button className="button primary" onClick={saveFeedback}><Save size={16}/>保存反馈</button></div>
+    <div className="page-intro compact"><div><p className="eyebrow">OPEN FEEDBACK</p><h1>新建学习反馈</h1><p>自由记录实际发生的事情，再决定是否调整项目书。</p></div><div className="button-group"><button className="button" onClick={() => saveFeedback(false)}><Save size={16}/>保存反馈</button><button className="button primary" onClick={() => saveFeedback(true)}><ArrowRight size={16}/>保存并调整项目书</button></div></div>
     <div className="feedback-date"><Calendar size={15}/>{today} · 将保存为 feedback/{today}-01.md</div>
     {error && <div className="error-banner">{error}</div>}
+    <div className="feedback-writing-tools"><button className="button" onClick={() => setShowPrompts(value => !value)}><Lightbulb size={15}/>{showPrompts ? "收起写作提示" : "查看写作提示"}</button><button className="button" onClick={() => setContent(value => appendFeedbackTemplate(value, today))}><Plus size={15}/>插入完整复盘模板</button></div>
+    {showPrompts && <div className="feedback-prompts"><span>实际发生了什么</span><span>哪些判断发生了变化</span><span>哪些内容值得保持</span><span>下一步想改变什么</span></div>}
     <div className="editor-surface feedback-surface"><MarkdownEditor value={content} onChange={value => { setContent(value); setError(""); }} preview={false}/></div>
   </div>;
 

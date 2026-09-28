@@ -30,7 +30,7 @@ struct ProjectFile { name: String, path: String, kind: String, extension: Option
 
 #[derive(Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
-struct GitCommit { hash: String, message: String, author: String, timestamp: String, kind: String }
+struct GitCommit { hash: String, message: String, author: String, timestamp: String, kind: String, related_feedback_path: Option<String> }
 
 #[derive(Debug, Serialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
@@ -54,6 +54,24 @@ fn run_git(root: &Path, args: &[&str]) -> Result<String, String> {
 
 fn validate_git_hash(hash: &str) -> Result<&str, String> {
     if (7..=64).contains(&hash.len()) && hash.chars().all(|character| character.is_ascii_hexdigit()) { Ok(hash) } else { Err("INVALID_GIT_HASH: commit hash is not valid".into()) }
+}
+
+fn validate_feedback_relative_path(path: &str) -> Result<&str, String> {
+    let candidate = Path::new(path);
+    let parts: Vec<_> = candidate.components().collect();
+    let valid = !candidate.is_absolute()
+        && parts.len() == 2
+        && parts[0].as_os_str() == "feedback"
+        && candidate.extension().and_then(|value| value.to_str()) == Some("md")
+        && candidate.file_stem().and_then(|value| value.to_str()).is_some_and(|value| !value.is_empty());
+    if valid { Ok(path) } else { Err("INVALID_FEEDBACK_PATH: expected feedback/<name>.md".into()) }
+}
+
+fn related_feedback_from_body(body: &str) -> Option<String> {
+    body.lines().find_map(|line| {
+        let path = line.strip_prefix("Learning-Machine-Feedback: ")?.trim();
+        validate_feedback_relative_path(path).ok().map(String::from)
+    })
 }
 
 fn parse_changed_files(raw: &str) -> Vec<GitChangedFile> {
@@ -170,8 +188,8 @@ fn move_entry(project_root: String, source_relative_path: String, destination_di
 
 #[tauri::command]
 fn git_history(project_root: String) -> Result<Vec<GitCommit>, String> {
-    let raw = run_git(Path::new(&project_root), &["log", "--pretty=format:%H%x1f%an%x1f%aI%x1f%s%x1e", "--", "project.md"])?; let mut commits = vec![];
-    for record in raw.split('\u{1e}').filter(|s| !s.trim().is_empty()) { let parts: Vec<_> = record.trim().split('\u{1f}').collect(); if parts.len() == 4 { let msg = parts[3].to_string(); let kind = if msg.starts_with("plan:") { "project" } else if msg.starts_with("feedback:") { "feedback" } else { "system" }; commits.push(GitCommit { hash: parts[0].into(), author: parts[1].into(), timestamp: parts[2].into(), message: msg, kind: kind.into() }); } } Ok(commits)
+    let raw = run_git(Path::new(&project_root), &["log", "--pretty=format:%H%x1f%an%x1f%aI%x1f%s%x1f%b%x1e", "--", "project.md"])?; let mut commits = vec![];
+    for record in raw.split('\u{1e}').filter(|s| !s.trim().is_empty()) { let parts: Vec<_> = record.trim_matches(['\r', '\n']).splitn(5, '\u{1f}').collect(); if parts.len() == 5 { let msg = parts[3].to_string(); let kind = if msg.starts_with("plan:") { "project" } else if msg.starts_with("feedback:") { "feedback" } else { "system" }; commits.push(GitCommit { hash: parts[0].into(), author: parts[1].into(), timestamp: parts[2].into(), message: msg, kind: kind.into(), related_feedback_path: related_feedback_from_body(parts[4]) }); } } Ok(commits)
 }
 #[tauri::command]
 fn git_commit_files(project_root: String, hash: String) -> Result<Vec<GitChangedFile>, String> {
@@ -202,6 +220,20 @@ async fn open_project_window(app: tauri::AppHandle) -> Result<(), String> {
 #[tauri::command] fn git_commit(project_root: String, message: String) -> Result<(), String> { let root = Path::new(&project_root); run_git(root, &["add", "project.md", "feedback", ".learning-machine/project.json"])?; run_git(root, &["commit", "-m", &message])?; Ok(()) }
 
 #[tauri::command]
+fn git_commit_project_version(project_root: String, summary: String, feedback_relative_path: String) -> Result<(), String> {
+    let summary = summary.trim();
+    if summary.is_empty() || summary.contains(['\r', '\n']) { return Err("INVALID_VERSION_SUMMARY: enter a single-line summary".into()); }
+    let feedback_path = validate_feedback_relative_path(&feedback_relative_path)?;
+    let root = Path::new(&project_root);
+    if !safe_join(root, feedback_path)?.is_file() { return Err("INVALID_FEEDBACK_PATH: feedback file does not exist".into()); }
+    let subject = format!("plan: {summary}");
+    let trailer = format!("Learning-Machine-Feedback: {feedback_path}");
+    run_git(root, &["add", "project.md"])?;
+    run_git(root, &["-c", "user.name=Learning Machine", "-c", "user.email=local@learning.machine", "commit", "-m", &subject, "-m", &trailer])?;
+    Ok(())
+}
+
+#[tauri::command]
 fn archive_project(project_root: String) -> Result<LearningProject, String> { let root = Path::new(&project_root); let mut project = read_project_from(root)?; project.status = "archived".into(); fs::write(config_path(root), serde_json::to_string_pretty(&project).unwrap()).map_err(|e| e.to_string())?; Ok(project) }
 
 #[tauri::command]
@@ -209,12 +241,12 @@ fn reveal_project(app: tauri::AppHandle, path: String) -> Result<(), String> { u
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    tauri::Builder::default().plugin(tauri_plugin_dialog::init()).plugin(tauri_plugin_opener::init()).plugin(tauri_plugin_store::Builder::new().build()).invoke_handler(tauri::generate_handler![create_project, read_project, initialize_existing_project, read_document, read_binary_document, write_document, create_feedback, list_feedback, list_project_files, create_entry, rename_entry, move_entry, delete_entry, import_file, reveal_entry, git_history, git_commit_files, git_file_diff, open_project_window, git_commit, archive_project, reveal_project]).run(tauri::generate_context!()).expect("error while running Learning Machine");
+    tauri::Builder::default().plugin(tauri_plugin_dialog::init()).plugin(tauri_plugin_opener::init()).plugin(tauri_plugin_store::Builder::new().build()).invoke_handler(tauri::generate_handler![create_project, read_project, initialize_existing_project, read_document, read_binary_document, write_document, create_feedback, list_feedback, list_project_files, create_entry, rename_entry, move_entry, delete_entry, import_file, reveal_entry, git_history, git_commit_files, git_file_diff, open_project_window, git_commit, git_commit_project_version, archive_project, reveal_project]).run(tauri::generate_context!()).expect("error while running Learning Machine");
 }
 
 #[cfg(test)]
 mod tests {
-    use super::{create_entry, git_history, next_window_label, parse_changed_files, read_binary_document, run_git, validate_git_hash};
+    use super::{create_entry, git_commit_project_version, git_history, next_window_label, parse_changed_files, read_binary_document, run_git, validate_feedback_relative_path, validate_git_hash};
     use std::{fs, time::{SystemTime, UNIX_EPOCH}};
     use tauri::ipc::{InvokeResponseBody, IpcResponse};
 
@@ -267,6 +299,46 @@ mod tests {
         assert_eq!(commits.len(), 1);
         assert_eq!(commits[0].message, "plan: initial project document");
         let _ = fs::remove_dir_all(root);
+    }
+
+    #[test]
+    fn validates_feedback_paths_before_storing_them_in_git_history() {
+        assert_eq!(validate_feedback_relative_path("feedback/2026-09-28-01.md").unwrap(), "feedback/2026-09-28-01.md");
+        assert!(validate_feedback_relative_path("feedback/nested/review.md").is_err());
+        assert!(validate_feedback_relative_path("notes/review.md").is_err());
+        assert!(validate_feedback_relative_path("../feedback/review.md").is_err());
+        assert!(validate_feedback_relative_path("C:\\feedback\\review.md").is_err());
+        assert!(validate_feedback_relative_path("feedback/review.txt").is_err());
+    }
+
+    #[test]
+    fn project_version_commit_keeps_its_related_feedback_in_history() {
+        let suffix = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_nanos();
+        let root = std::env::temp_dir().join(format!("learning-machine-related-feedback-{suffix}"));
+        fs::create_dir_all(root.join("feedback")).unwrap();
+        run_git(&root, &["init"]).unwrap();
+        fs::write(root.join("project.md"), "# 初始项目书\n").unwrap();
+        fs::write(root.join("feedback/2026-09-28-01.md"), "# 阶段复盘\n").unwrap();
+        run_git(&root, &["add", "."]).unwrap();
+        run_git(&root, &["-c", "user.name=Test", "-c", "user.email=test@example.com", "commit", "-m", "chore: initial state"]).unwrap();
+        fs::write(root.join("project.md"), "# 调整后的项目书\n").unwrap();
+
+        git_commit_project_version(
+            root.to_string_lossy().to_string(),
+            "缩小下一阶段范围".into(),
+            "feedback/2026-09-28-01.md".into(),
+        ).unwrap();
+        let commits = git_history(root.to_string_lossy().to_string()).unwrap();
+
+        assert_eq!(commits[0].message, "plan: 缩小下一阶段范围");
+        assert_eq!(commits[0].related_feedback_path.as_deref(), Some("feedback/2026-09-28-01.md"));
+        let _ = fs::remove_dir_all(root);
+    }
+
+    #[test]
+    fn project_version_commit_rejects_an_empty_summary() {
+        let result = git_commit_project_version("unused".into(), "   ".into(), "feedback/review.md".into());
+        assert!(result.unwrap_err().contains("INVALID_VERSION_SUMMARY"));
     }
 
     #[test]

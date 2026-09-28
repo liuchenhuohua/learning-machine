@@ -2,8 +2,8 @@
 
 ## Current State
 
-**Last Updated:** 2026-09-27
-**Active Feature:** `v2-core-feedback-loop` — 页面与交互要求已确认，正在编写实施计划
+**Last Updated:** 2026-09-28
+**Active Feature:** `v2-core-feedback-loop` — 页面与交互要求及实施任务已写入 `feature_list.json`
 **Branch:** `feature/v2-core-feedback-loop`
 
 ## Status
@@ -21,15 +21,18 @@
 - [x] 为全部功能补齐七字段 `contract`，并验证结构一致性。
 - [x] 从 `main` 创建 `feature/v2-core-feedback-loop` 分支，保留 V1 指针不变。
 - [x] 保存 V2 高层任务合同，未在需求明确前修改产品代码。
+- [x] `v2-01`：增加调整草稿状态、调整/确认页面类型，并在切换或关闭项目时清理草稿；前端测试 28/28、类型检查通过。
+- [x] `v2-02`：Git commit trailer 持久关联反馈路径，增加安全校验与历史解析；Rust 测试 12/12、类型检查通过。
+- [x] `v2-03`：反馈编辑器改为空白 Markdown，增加可选提示、模板追加以及“保存并调整项目书”；前端测试 31/31、类型检查通过。
 
 ### What's In Progress
 
-- [ ] 无活动功能。
+- [ ] `v2-core-feedback-loop`：正在实现 `v2-04` 反馈与项目书双栏调整工作区。
 
 ### What's Next
 
-1. 完成并复核 V2 逐步实施计划。
-2. 用户确认计划和执行方式后按 TDD 顺序实现。
+1. 实现 `v2-04` 反馈与项目书双栏调整工作区。
+2. 按 `feature_list.json` 中的顺序继续实现剩余任务。
 3. 每个阶段记录验证证据，完整门禁通过后再讨论合并。
 
 ## Blockers / Risks
@@ -56,7 +59,6 @@
 - `init.sh` — Bash 完整验证入口。
 - `init.ps1` — Windows PowerShell 完整验证入口。
 - `README.md` — Harness 使用入口。
-- `docs/superpowers/plans/2026-09-27-core-feedback-loop-v2.md` — V2 页面与交互分阶段实施计划。
 
 ## Evidence of Completion
 
@@ -71,4 +73,4 @@
 
 ## Notes for Next Session
 
-当前位于 `feature/v2-core-feedback-loop`。任务合同和实施计划已按设计文档“页面与交互”部分更新；等待用户确认计划与执行方式后再开始编码，不要提前合并到 `main`。
+当前位于 `feature/v2-core-feedback-loop`。页面与交互需求及 8 项实施任务已直接写入 `feature_list.json`；从 `v2-01` 开始直接编码，不要提前合并到 `main`。
