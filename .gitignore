@@ -8,3 +8,9 @@ vite.config.js
 vite.config.d.ts
 .DS_Store
 Thumbs.db
+docs/
+AGENTS.md
+feature_list.json
+init.ps1
+init.sh
+progress.md
